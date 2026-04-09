@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vortex — Secure Private File Sharing</title>
+  <meta name="description" content="Share files securely with expiring links and QR codes. No account needed. Self-hosted, private, and ephemeral." />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<div class="page">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <h1>Vortex</h1>
+    </div>
+    <p class="subtitle">Secure, temporary file sharing — <strong>no account needed</strong></p>
+  </header>
+
+  <div class="card" id="uploadCard">
+
+    <!-- DROPZONE -->
+    <div class="dropzone" id="dropzone">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </div>
+      <h2>Select a file to share</h2>
+      <p>or drag and drop it here · up to 100 MB</p>
+    </div>
+
+    <input type="file" id="fileInput" />
+
+    <!-- FILE SELECTED -->
+    <div class="file-selected" id="fileSelected">
+      <div class="file-emoji" id="fileEmoji">📁</div>
+      <div class="file-info">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-size" id="fileSize"></div>
+      </div>
+      <button class="file-remove" id="fileRemoveBtn" aria-label="Remove file">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- OPTIONS ROW -->
+    <div class="options-row">
+      <div class="option-group">
+        <span class="option-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </span>
+        <select class="option-select" id="expirySelect">
+          <option value="1">Expires in: 1 Hour</option>
+          <option value="24">Expires in: 24 Hours</option>
+          <option value="72" selected>Expires in: 3 Days</option>
+          <option value="168">Expires in: 7 Days</option>
+        </select>
+      </div>
+
+      <div class="option-group">
+        <span class="option-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </span>
+        <input type="password" class="option-input" id="passwordInput" placeholder="Password (optional)" autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- SHARE BUTTON -->
+    <button class="btn-share" id="shareBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+      Share Securely
+    </button>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-top">
+        <span class="label" id="progressStatus">Uploading…</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="error-box" id="errorBox">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span id="errorMsg">Something went wrong.</span>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-wrap" id="resultWrap">
+      <div class="result-label">
+        <div class="success-dot"></div>
+        Your file is ready to share
+      </div>
+
+      <div class="link-row">
+        <a class="link-url" id="shareUrl" href="#" target="_blank" rel="noopener"></a>
+        <button class="btn-copy" id="copyBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy
+        </button>
+      </div>
+
+      <div class="result-meta">
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span id="expiryMeta">Expires in 3 days</span>
+        </span>
+        <span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span id="passwordMeta">No password</span>
+        </span>
+      </div>
+
+      <!-- QR CODE -->
+      <div class="qr-section">
+        <button class="qr-toggle-btn" id="qrToggleBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            <rect x="14" y="14" width="3" height="3"/>
+          </svg>
+          <span id="qrLabel">Show QR Code</span>
+        </button>
+        <div class="qr-box" id="qrBox"></div>
+      </div>
+
+      <button class="btn-reset" id="resetBtn">↑ Share another file</button>
+    </div>
+
+  </div>
+
+  <!-- FEATURES GRID -->
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon cyan">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div class="feature-title">Instant</div>
+      <div class="feature-desc">No accounts, no waiting. Upload and share in seconds.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon pink">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="feature-title">Ephemeral</div>
+      <div class="feature-desc">Auto-expires when time runs out. No traces left behind.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div class="feature-title">Private</div>
+      <div class="feature-desc">Password-protect files. QR code sharing. Your data stays yours.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>© 2026 Vortex · Secure, temporary file sharing</footer>
+
+<div class="toast" id="toast">✅ Link copied to clipboard!</div>
+
+<script src="/js/upload.js"></script>
+</body>
+</html>

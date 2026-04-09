@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  vortex:
+    build: .
+    container_name: vortex
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BASE_URL=${BASE_URL:-http://localhost:3000}
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-100}
+      - UPLOAD_DIR=/app/uploads
+      - DB_PATH=/app/data/vortex.db
+    volumes:
+      - vortex-uploads:/app/uploads
+      - vortex-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  vortex-uploads:
+  vortex-data:
