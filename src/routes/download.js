@@ -106,7 +106,9 @@ router.get('/:shareId/qr', async (req, res) => {
       return res.status(404).json({ error: 'File not found.' });
     }
 
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const baseUrl = process.env.BASE_URL || `${protocol}://${host}`;
     const shareUrl = `${baseUrl}/s/${file.share_id}`;
 
     const qrBuffer = await QRCode.toBuffer(shareUrl, {

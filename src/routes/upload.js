@@ -82,8 +82,10 @@ router.post('/', uploadLimiter, (req, res) => {
         maxDownloads,
       });
 
-      // Generate share URL
-      const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+      // Generate share URL — auto-detect from request if BASE_URL not set
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const host = req.headers['x-forwarded-host'] || req.headers.host;
+      const baseUrl = process.env.BASE_URL || `${protocol}://${host}`;
       const shareUrl = `${baseUrl}/s/${shareId}`;
 
       // Generate QR code as data URL
